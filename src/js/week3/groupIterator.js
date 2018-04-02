@@ -30,15 +30,26 @@ class Group {
 
 }
 
-let group = Group.from([10, 20]);
-console.log(group.has(10));
-// → true
-console.log(group.has(30));
-// → false
-group.add(30);
-console.log(group.has(30));
-// true
-group.add(10);
-group.delete(10);
-console.log(group.has(10));
-// → false
+class GroupIterator {
+    constructor(group) {
+        this.current = 0;
+        this.group = group;
+    }
+
+    next() {
+        if (this.current == this.group.set.length) {
+            return { done: true };
+        }
+        let value = this.group.set[this.current];
+        this.current++;
+
+        return { value, done: false };
+    }
+}
+
+for (let value of Group.from(["a", "b", "c"])) {
+    console.log(value);
+}
+// → a
+// → b
+// → c
