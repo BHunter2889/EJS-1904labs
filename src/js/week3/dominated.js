@@ -1,13 +1,20 @@
-require('scripts.js')
+require('./scripts.js');
 
 
 console.log(dominantDirection("Hello!"));
 console.log(dominantDirection("Hey, مساء الخير"));
 
 function dominantDirection(input) {
-    let findScript = (code) => SCRIPTS.find(script => script.ranges.some(
-        (code, [from, to]) => code >= from && code < to));
-    let group = char => {
+    function findScript(code) {
+      function inRange([from, to]) {
+         return code >= from && code < to
+      }
+      return SCRIPTS.find(script => {
+        return script.ranges.some(inRange);
+      })
+    }
+
+    function group(char) {
         script = findScript(char.codePointAt(0));
         return script ? script.direction : "none";
     }
@@ -31,7 +38,7 @@ function countBy(items, groupName) {
             counts.push({ name, count: 1 });
         } else {
             counts[known].count++;
-            counts.reduce()
+            //counts.reduce()
         }
     }
     return counts;
