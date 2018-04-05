@@ -153,7 +153,7 @@ function goalOrientedRobot({ place, parcels }, route) {
 }
 
 function efficientRobot({ place, parcels }, memory) {
-    
+    // evaluate route on each move (splice in?) (Is a package closer than my delivery point?)
     if (memory.length == 0) {
         let routes = [], places = [];
         
