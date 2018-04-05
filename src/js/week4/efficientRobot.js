@@ -66,7 +66,7 @@ var mailRoute = [
     "Marketplace", "Post Office"
 ];
 
-compareRobots(routeRobot, [], goalOrientedRobot, []);
+compareRobots(efficientRobot, [], goalOrientedRobot, []);
 
 function compareRobots(robot1, memory1, robot2, memory2) {
     console.log(measure(robot1, memory1, robot2, memory2));
@@ -99,16 +99,16 @@ function runRobot(state, robot, memory) {
     }
 }
 
-function runEfficientRobot(state, robot, memory) {
-    for (let turn = 0;; turn++) {
-        if (state.parcels.length == 0) {
-            return turn;
-        }
-        let action = robot(state, memory);
-        state = state.move(action.direction);
-        memory = action.memory;
-    }
-}
+// function runEfficientRobot(state, robot, memory) {
+//     for (let turn = 0;; turn++) {
+//         if (state.parcels.length == 0) {
+//             return turn;
+//         }
+//         let action = robot(state, memory);
+//         state = state.move(action.direction);
+//         memory = action.memory;
+//     }
+// }
 
 function routeRobot(state, memory) {
     if (memory.length == 0) {
@@ -152,27 +152,41 @@ function goalOrientedRobot({ place, parcels }, route) {
     return { direction: route[0], memory: route.slice(1) };
 }
 
-function efficientRobot({ place, parcels }, route) {
-    if (route.length == 0) {
-        // let parcel = parcels[0];
+function efficientRobot({ place, parcels }, memory) {
+    
+    if (memory.length == 0) {
+        let routes = [], places = [];
+        
         for (let parcel of parcels) {
-            let routes = [];
-            if (parcel.place != place) {
-                //TODO: make finde Route more efficient
-                routes.push(findRoute(roadGraph, place, parcel.place));
-            } else {
-                routes.push(findRoute(roadGraph, place, parcel.address));
+            places.push(parcel.place);
+            if (parcel.place == place) {
+                return {direction: findRoute(roadGraph, place, parcel.address)[0],
+                        memory: memory.slice(1)};
             }
+            pickUp = findRoute(roadGraph, place, parcel.place);
+            deliver = findRoute(roadGraph, place, parcel.address);
+            let shouldPickUp = pickUp.length <= deliver.length 
+                                && pickUp.length > 0;
+            routes.push(shouldPickUp ? pickUp : deliver);
 
-            let lengths = routes.map(r => r.length);
-            let shorties = routes.filter(l => l.length == Math.min(lengths));
-
-            if (shorties.length > 1) {
-
-            }
         }
+        let lengths = routes.map(r => r.length);
+        let shorties = routes.filter(l => l.length == Math.min(...lengths));
 
-        return { direction: route[0], memory: route.slice(1) };
-
+        if (shorties.length > 1) {
+           memory = preferPickup(shorties, places);
+        } else {
+            memory = shorties[0];
+        }
     }
+    return { direction: memory[0], memory: memory.slice(1) };
+}
+
+function preferPickup(routes, places) {
+    for (route of routes) {
+      if (places.includes(route[route.length - 1])) {
+        return route;
+      }
+    }
+    return routes[0];
 }
