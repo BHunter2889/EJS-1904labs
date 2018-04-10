@@ -152,41 +152,86 @@ function goalOrientedRobot({ place, parcels }, route) {
     return { direction: route[0], memory: route.slice(1) };
 }
 
+// Why Doesn't this work the way I think it should?
 function efficientRobot({ place, parcels }, memory) {
-    // evaluate route on each move (splice in?) (Is a package closer than my delivery point?)
     if (memory.length == 0) {
-        let routes = [], places = [];
-        
-        for (let parcel of parcels) {
-            places.push(parcel.place);
-            if (parcel.place == place) {
-                return {direction: findRoute(roadGraph, place, parcel.address)[0],
-                        memory: memory.slice(1)};
+        let routes = [],
+            places = [];
+        // let minlen = Number.MAX_SAFE_INTEGER;
+
+    
+        let parcelsHere = parcels.filter(p => p.place == place);
+        // console.log(parcelsHere);
+        let pickups = parcels.filter(p => p.place != place);
+        // console.log(pickups);
+        routes.push(pickups.map(p => {
+           return {isPickup: true, route: findRoute(roadGraph, place, p.place)}
+        }));
+        // console.log(routes);
+        routes.push(parcelsHere.map(p => {
+            return {isPickup: false, route: findRoute(roadGraph, place, p.address)}
+        }));
+        // console.log(routes);
+        routes = routes.reduce(function(prev, curr) {
+            return prev.concat(curr);
+          });
+        routes.sort((x,y) => {
+            if (x.route.length == y.route.length) {
+                return x.isPickup ? x : y;
             }
-            pickUp = findRoute(roadGraph, place, parcel.place);
-            deliver = findRoute(roadGraph, place, parcel.address);
-            let shouldPickUp = pickUp.length <= deliver.length 
-                                && pickUp.length > 0;
-            routes.push(shouldPickUp ? pickUp : deliver);
+            else {
+                return x.route.length <= y.route.length ? x : y
+            }
+        });
+        // console.log(routes);
+        memory = routes.map(r => r.route)[0];
+        console.log("=============MEMORY==============");
+        console.log(memory);
 
-        }
-        let lengths = routes.map(r => r.length);
-        let shorties = routes.filter(l => l.length == Math.min(...lengths));
 
-        if (shorties.length > 1) {
-           memory = preferPickup(shorties, places);
-        } else {
-            memory = shorties[0];
-        }
+        // if (parcelsHere.length != 0) {
+        //     // minlen = Math.min(minlen, parcelsHere.map(p => findRoute(roadGraph, place));)
+        //     routes.push(parcelsHere);
+        // }
+
+
+
+        // for (let parcel of parcels) {
+        //     places.push(parcel.place);
+        //     if (parcel.place == place) {
+        //         return {
+        //             direction: findRoute(roadGraph, place, parcel.address)[0],
+        //             memory: memory.slice(1)
+        //         };
+        //     }
+        //     pickUp = findRoute(roadGraph, place, parcel.place);
+        //     deliver = findRoute(roadGraph, place, parcel.address);
+        //     let shouldPickUp = pickUp.length <= deliver.length &&
+        //         pickUp.length > 0;
+        //     routes.push(shouldPickUp ? pickUp : deliver);
+
+        // }
+        // let lengths = routes.map(r => r.length);
+        // let shorties = routes.filter(l => l.length == Math.min(...lengths));
+
+        // if (shorties.length > 1) {
+        //     memory = preferPickup(shorties, places);
+        // } else {
+        //     memory = shorties[0];
+        // }
     }
+    // else if(memory.length == 0) {
+    //     memory = memory.slice(1);
+    // }
+    // console.log(memory);
     return { direction: memory[0], memory: memory.slice(1) };
 }
 
 function preferPickup(routes, places) {
     for (route of routes) {
-      if (places.includes(route[route.length - 1])) {
-        return route;
-      }
+        if (places.includes(route[route.length - 1])) {
+            return route;
+        }
     }
     return routes[0];
 }
