@@ -1,4 +1,4 @@
-import {bigOak} from "./crow-tech";
+const bigOak = require("./crow-tech").bigOak;
 
 function findRoute(from, to, connections) {
     let work = [{at: from, via: null}];
@@ -39,14 +39,25 @@ function anyStorage(nest, source, name) {
 
 // -----------------*Sigh*----------------------
 async function locateScalpel(nest) {
-    // Your code here.
-}
-
-function locateScalpel2(nest) {
-// Your code here.
-}
-
-locateScalpel(bigOak).then(console.log);
-// → Butcher Shop
-locateScalpel2(bigOak).then(console.log);
-// → Butcher Shop
+    let current = nest.name;
+    for (;;) {
+      let next = await anyStorage(nest, current, "scalpel");
+      if (next == current) return current;
+      current = next;
+    }
+  }
+  
+  function locateScalpel2(nest) {
+    function loop(current) {
+      return anyStorage(nest, current, "scalpel").then(next => {
+        if (next == current) return current;
+        else return loop(next);
+      });
+    }
+    return loop(nest.name);
+  }
+  
+  locateScalpel(bigOak).then(console.log);
+  // → Butcher's Shop
+  locateScalpel2(bigOak).then(console.log);
+  // → Butcher's Shop
