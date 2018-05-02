@@ -1,0 +1,33 @@
+<!doctype html>
+
+<style>
+  .trail { /* className for the trail elements */
+    position: absolute;
+    height: 6px; width: 6px;
+    border-radius: 3px;
+    background: teal;
+  }
+  body {
+    height: 300px;
+  }
+</style>
+
+<body>
+<script>
+  let crimes = [];
+  for (let i = 0; i < 12; i++) {
+    let trap = document.createElement("div");
+    trap.className = "trail";
+    document.body.appendChild(trap);
+    crimes.push(trap);
+  }
+  let presentCrime = 0;
+  
+  window.addEventListener("mousemove", event => {
+    let inspector = crimes[presentCrime];
+    inspector.style.left = (event.pageX - 10) + "px";
+    inspector.style.top = (event.pageY - 10) + "px";
+    presentCrime = (presentCrime + 1) % crimes.length;
+  });
+</script>
+</body>
