@@ -1,15 +1,27 @@
-<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="../../../css/game.css">
+<script src="./levels.js"></script>
+<script src="./game.js"></script>
 
 <body>
 <script>
   // TODO: The old runGame function. Modify it...
   async function runGame(plans, Display) {
-    for (let level = 0; level < plans.length;) {
+    let lives = 3;
+    for (let level = 0; lives > 0 && level < plans.length;) {
+      console.log(`Level ${level +1}, Lives: ${lives}`);
       let status = await runLevel(new Level(plans[level]),
                                   Display);
-      if (status == "won") level++;
+      if (status == "won"){ 
+        level++;
+      } else {
+        lives--;
+      }
     }
-    console.log("You've won!");
+    if (lives > 0) {
+      console.log("You've won!");      
+    } else {
+      console.log("Game over");
+    }
   }
   runGame(GAME_LEVELS, DOMDisplay);
 </script>
