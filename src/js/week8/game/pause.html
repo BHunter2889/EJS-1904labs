@@ -1,0 +1,96 @@
+<link rel="stylesheet" href="../../../css/game.css">
+<script src="./levels.js"></script>
+<script src="./game.js"></script>
+
+<body>
+<script>
+
+  async function runGame(plans, Display) {
+    let lives = 3;
+    for (let level = 0; lives > 0 && level < plans.length;) {
+    console.log(`Level ${level +1}, Lives: ${lives}`);
+    let status = await runLevel(new Level(plans[level]),
+                                Display);
+    if (status == "won"){ 
+        level++;
+    } else {
+        lives--;
+    }
+    }
+    if (lives > 0) {
+    console.log("You've won!");      
+    } else {
+    console.log("Game over");
+    }
+  }
+  // The old runLevel function. Modify this...
+  function runLevel(level, Display) {
+    let display = new Display(document.body, level);
+    let state = State.start(level);
+    let ending = 1;
+    let paused = "no";
+
+    return new Promise(resolve => {
+        function escHandler(event) {
+            if (event.key != "Escape") return;
+            event.preventDefault();
+
+            if (paused == "yes") {
+                paused = "no";
+                runAnimation(shouldRenderAnimation);
+            } else if (paused == "no") {
+                paused = "pausing";
+            } else {
+                paused = "yes";
+            }
+        }
+
+        window.addEventListener("keydown", escHandler);
+        let arrowKeys = trackKeys(["ArrowLeft", "ArrowRight", "ArrowUp"]);
+
+        function shouldRenderAnimation(time) {
+            if (paused == "pausing") {
+                paused = "yes";
+                return false;
+            }
+
+            state = state.update(time, arrowKeys);
+            display.setState(state);
+            if (state.status == "playing") {
+                return true;
+            } else if (ending > 0) {
+                ending -= time;
+                return true;
+            } else {
+                display.clear();
+                window.removeEventListener("keydown", escHandler);
+                arrowKeys.unregister();
+                resolve(state.status);
+                return false;
+            }
+        }  
+
+        runAnimation(shouldRenderAnimation);
+    });
+  }
+
+  function trackKeys(keys) {
+    let down = Object.create(null);
+    function track(event) {
+      if (keys.includes(event.key)) {
+        down[event.key] = event.type == "keydown";
+        event.preventDefault();
+      }
+    }
+    window.addEventListener("keydown", track);
+    window.addEventListener("keyup", track);
+    down.unregister = () => {
+      window.removeEventListener("keydown", track);
+      window.removeEventListener("keyup", track);
+    };
+    return down;
+  }
+
+  runGame(GAME_LEVELS, DOMDisplay);
+</script>
+</body>
