@@ -1,28 +1,32 @@
 <link rel="stylesheet" href="../../../css/game.css">
-<script src="./levels.js"></script>
+<!-- <script src="./levels.js"></script> -->
 <script src="./game.js"></script>
+
+<style>
+    .monster { background: purple }
+</style>
 
 <body>
 <script>
 
-  async function runGame(plans, Display) {
-    let lives = 3;
-    for (let level = 0; lives > 0 && level < plans.length;) {
-    console.log(`Level ${level +1}, Lives: ${lives}`);
-    let status = await runLevel(new Level(plans[level]),
-                                Display);
-    if (status == "won"){ 
-        level++;
-    } else {
-        lives--;
-    }
-    }
-    if (lives > 0) {
-    console.log("You've won!");      
-    } else {
-    console.log("Game over");
-    }
-  }
+//   async function runGame(plans, Display) {
+//     let lives = 3;
+//     for (let level = 0; lives > 0 && level < plans.length;) {
+//     console.log(`Level ${level +1}, Lives: ${lives}`);
+//     let status = await runLevel(new Level(plans[level]),
+//                                 Display);
+//     if (status == "won"){ 
+//         level++;
+//     } else {
+//         lives--;
+//     }
+//     }
+//     if (lives > 0) {
+//     console.log("You've won!");      
+//     } else {
+//     console.log("Game over");
+//     }
+//   }
   // The old runLevel function. Modify this...
   function runLevel(level, Display) {
     let display = new Display(document.body, level);
@@ -91,57 +95,57 @@
     return down;
   }
 
-  class Monster {
-      constructor(pos, speed, altitude = 1, state) {
-          this.pos = pos.plus(new Vec(0, altitude));
-          this.speed = speed.times(state.player.pos.times(0.33));
-          this.altitude = altitude;
-      }
+//   class Monster {
+//       constructor(pos, speed, altitude = 1, state) {
+//           this.pos = pos.plus(new Vec(0, altitude));
+//           this.speed = speed.times(state.player.pos.times(0.33));
+//           this.altitude = altitude;
+//       }
 
-      get type() { return "monster"; }
+//       get type() { return "monster"; }
 
-      static create(pos, state) {
-        return new Monster(pos.plus(new Vec(0, -1)),  );
-      }
+//       static create(pos, state) {
+//         return new Monster(pos.plus(new Vec(0, -1)),  );
+//       }
 
-      update(time, state) {
-          this.speed = this.pos.plus(new Vec(1, 0)) == state.player.pos ? 
-              new Vec(1,0) :
-              this.speed.times(state.player.pos.times(0.33));
-          let newPos = this.pos.plus(this.speed.times(time));
-          if (!state.level.touches(newPos, this.size, "wall")) {
-            return new Monster(newPos, this.speed, this.altitude);
-          } else {
-            return new Monster(this.pos, this.speed, this.altitude+1);
-          }
-      }
+//       update(time, state) {
+//           this.speed = this.pos.plus(new Vec(1, 0)) == state.player.pos ? 
+//               new Vec(1,0) :
+//               this.speed.times(state.player.pos.times(0.33));
+//           let newPos = this.pos.plus(this.speed.times(time));
+//           if (!state.level.touches(newPos, this.size, "wall")) {
+//             return new Monster(newPos, this.speed, this.altitude);
+//           } else {
+//             return new Monster(this.pos, this.speed, this.altitude+1);
+//           }
+//       }
 
-      collide(state) {
-        if (state.level.touches(newPos, this.size, "player") &&
-            state.player.pos.y > this.pos.y) {          
-            return new State(state.level, state.actors, "lost");          
-        } else {
-          return new State(state.level, state.actors, "won");            
-        }
-      }
-    }
+//       collide(state) {
+//         if (state.level.touches(newPos, this.size, "player") &&
+//             state.player.pos.y > this.pos.y) {          
+//             return new State(state.level, state.actors, "lost");          
+//         } else {
+//           return new State(state.level, state.actors, "won");            
+//         }
+//       }
+//     }
     Monster.prototype.size = new Vec(1.2, 2);
 
-    levelChars["M"] = Monster;
+    // levelChars["M"] = Monster;
 
     runLevel(new Level(`
-    ..................................
-    .################################.
-    .#..............................#.
-    .#..............................#.
-    .#..............................#.
-    .#...........................o..#.
-    .#..@...........................#.
-    .##########..............########.
-    ..........#..o..o..o..o..#........
-    ..........#...........M..#........
-    ..........################........
-    ..................................
-    `), DOMDisplay);
+..................................
+.################################.
+.#..............................#.
+.#..............................#.
+.#..............................#.
+.#...........................o..#.
+.#..@...........................#.
+.##########..............########.
+..........#..o..o..o..o..#........
+..........#...........M..#........
+..........################........
+..................................
+`), DOMDisplay);
 </script>
 </body>

@@ -1,13 +1,13 @@
-var simpleLevelPlan = `
-......................
-..#................#..
-..#..............=.#..
-..#.........o.o....#..
-..#.@......#####...#..
-..#####............#..
-......#++++++++++++#..
-......##############..
-......................`;
+// var simpleLevelPlan = `
+// ......................
+// ..#................#..
+// ..#..............=.#..
+// ..#.........o.o....#..
+// ..#.@......#####...#..
+// ..#####............#..
+// ......#++++++++++++#..
+// ......##############..
+// ......................`;
 
 var Level = class Level {
   constructor(plan) {
@@ -112,13 +112,52 @@ var Coin = class Coin {
 
 Coin.prototype.size = new Vec(0.6, 0.6);
 
+var Monster = class Monster {
+  constructor(pos, state, speed = new Vec(5, 0), altitude = 1) {
+      this.pos = pos.plus(new Vec(0, altitude));
+      this.speed = speed;
+      this.altitude = altitude;
+  }
+
+  get type() { return "monster"; }
+
+  static create(pos, state) {
+    return new Monster(pos.plus(new Vec(0, -1)),  state);
+  }
+
+  update(time, state) {
+      // console.log(typeof this.speed);
+      this.speed = this.pos.plus(new Vec(1, 0)) == state.player.pos ? 
+          new Vec(1,0) :
+          this.speed.times(state.player.pos.times(0.33) || 5);
+      let newPos = this.pos.plus(this.speed.times(time));
+      if (!state.level.touches(newPos, this.size, "wall")) {
+        return new Monster(newPos, state, this.speed, this.altitude);
+      } else {
+        return new Monster(this.pos, state, this.speed, this.altitude+1);
+      }
+  }
+
+  collide(state) {
+    if (state.level.touches(newPos, this.size, "player") &&
+        state.player.pos.y > this.pos.y) {          
+        return new State(state.level, state.actors, "lost");          
+    } else {
+      return new State(state.level, state.actors, "won");            
+    }
+  }
+}
+Monster.prototype.size = new Vec(1.2, 2);
+
 var levelChars = {
   ".": "empty", "#": "wall", "+": "lava",
   "@": Player, "o": Coin,
-  "=": Lava, "|": Lava, "v": Lava
+  "=": Lava, "|": Lava, "v": Lava, "M": Monster
 };
 
-var simpleLevel = new Level(simpleLevelPlan);
+levelChars["M"] = Monster;
+
+// var simpleLevel = new Level(simpleLevelPlan);
 
 function elt(name, attrs, ...children) {
   let dom = document.createElement(name);
