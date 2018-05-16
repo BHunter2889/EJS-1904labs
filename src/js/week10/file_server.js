@@ -75,6 +75,22 @@ methods.DELETE = async function(request) {
   return {status: 204};
 };
 
+const {mkdir} = require("fs/promises");
+
+methods.MKCOL = async function(request) { //TODO MKCOL
+  let path = urlPath(request.url);
+  let stats;
+  try {
+    stats = await stat(path);
+  } catch (error) {
+    if (error.code != "ENOENT") throw error;
+    else await mkdir(path);
+  }
+  if (!stats.isDirectory()) return {status: 400, body: "Bad Request"};
+  else await unlink(path);
+  return {status: 204};
+};
+
 const {createWriteStream} = require("fs");
 
 function pipeStream(from, to) {
@@ -92,18 +108,18 @@ methods.PUT = async function(request) {
   return {status: 204};
 };
 
-const {mkdir} = require("fs/promises");
+// const {mkdir} = require("fs/promises");
 
-methods.MKCOL = async function(request) {
-  let path = urlPath(request.url);
-  let stats;
-  try {
-    stats = await stat(path);
-  } catch (error) {
-    if (error.code != "ENOENT") throw error;
-    await mkdir(path);
-    return {status: 204};
-  }
-  if (stats.isDirectory()) return {status: 204};
-  else return {status: 400, body: "Not a directory"};
-};
+// methods.MKCOL = async function(request) {
+//   let path = urlPath(request.url);
+//   let stats;
+//   try {
+//     stats = await stat(path);
+//   } catch (error) {
+//     if (error.code != "ENOENT") throw error;
+//     await mkdir(path);
+//     return {status: 204};
+//   }
+//   if (stats.isDirectory()) return {status: 204};
+//   else return {status: 400, body: "Not a directory"};
+// };

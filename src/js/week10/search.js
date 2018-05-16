@@ -1,11 +1,15 @@
-const {stat, readFile, readdir} = require(fs/promises);
+const {stat, readFile, readdir} = require("fs/promises");
 
 function _initSearch() {
     const regex = new RegExp(process.argv[2]);
     const fileArray = process.argv.slice(3, process.argv.length);
+    let stats = stat(fileArray[0]);    
+    console.log(stats);    
     return async function _search(fileArray, index = 0) {
         let found = [];
         await Promise.all(fileArray.array.forEach(file => {
+            let stats = stat(file);
+            console.log(stats);
             testDir(file)
             .then( isDir => {
                 if (isDir) resolve(_search(file));
@@ -39,7 +43,7 @@ async function testDir(path) {
     return new Promise((resolve, reject) => {
         let stats;
         try {
-            stats = await stat(path);
+            stats = stat(path);
         } catch (error) {
             if (error.code != "ENOENT") throw error;
             else reject(error);
