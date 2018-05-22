@@ -1,4 +1,11 @@
 const {createServer} = require("http");
+const fs = require("fs");
+const {rmdir, mkdir, unlink, stat, readdir} = fs.promises;
+var {parse} = require("url");
+var {resolve} = require("path");
+const mime = require("mime");
+
+var baseDirectory = process.cwd();
 
 const methods = Object.create(null);
 
@@ -23,11 +30,6 @@ async function notAllowed(request) {
   };
 }
 
-var {parse} = require("url");
-var {resolve} = require("path");
-
-var baseDirectory = process.cwd();
-
 function urlPath(url) {
   let {pathname} = parse(url);
   let path = resolve(decodeURIComponent(pathname).slice(1));
@@ -37,10 +39,6 @@ function urlPath(url) {
   }
   return path;
 }
-
-const {createReadStream} = require("fs");
-const {stat, readdir} = require("fs/promises");
-const mime = require("mime");
 
 methods.GET = async function(request) {
   let path = urlPath(request.url);
@@ -54,12 +52,10 @@ methods.GET = async function(request) {
   if (stats.isDirectory()) {
     return {body: (await readdir(path)).join("\n")};
   } else {
-    return {body: createReadStream(path),
+    return {body: fs.createReadStream(path),
             type: mime.getType(path)};
   }
 };
-
-const {rmdir, unlink} = require("fs/promises");
 
 methods.DELETE = async function(request) {
   let path = urlPath(request.url);
@@ -75,8 +71,6 @@ methods.DELETE = async function(request) {
   return {status: 204};
 };
 
-const {mkdir} = require("fs/promises");
-
 methods.MKCOL = async function(request) { //TODO MKCOL
   let path = urlPath(request.url);
   let stats;
@@ -91,8 +85,6 @@ methods.MKCOL = async function(request) { //TODO MKCOL
   return {status: 204};
 };
 
-const {createWriteStream} = require("fs");
-
 function pipeStream(from, to) {
   return new Promise((resolve, reject) => {
     from.on("error", reject);
@@ -104,7 +96,7 @@ function pipeStream(from, to) {
 
 methods.PUT = async function(request) {
   let path = urlPath(request.url);
-  await pipeStream(request, createWriteStream(path));
+  await pipeStream(request, fs.createWriteStream(path));
   return {status: 204};
 };
 

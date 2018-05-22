@@ -1,34 +1,37 @@
-const {stat, readFile, readdir} = require("fs/promises");
+const {lstat, readFile, readdir} = require("fs").promises;
 
 function _initSearch() {
     const regex = new RegExp(process.argv[2]);
     const fileArray = process.argv.slice(3, process.argv.length);
-    let stats = stat(fileArray[0]);    
-    console.log(stats);    
-    return async function _search(fileArray, index = 0) {
-        let found = [];
-        await Promise.all(fileArray.array.forEach(file => {
-            let stats = stat(file);
-            console.log(stats);
-            testDir(file)
-            .then( isDir => {
-                if (isDir) resolve(_search(file));
-                else if (searchFile(regex, file))  resolve(process.cwd + "/" + file);
-                else resolve();
-            })
-            .then(result => {
-                if (result) {
-                    found.push(result);
-                }
-                resolve; 
-            })
-        })).catch(error => {
-            console.log(error);
-        });
-        return found;
-        // TODO test Dir, branch recursive _search, 
-        // create foundFiles array and concat results of recursive _search
-    }
+    
+    // let stats = stat(fileArray[0]);    
+    console.log(fileArray);    
+    return _search(regex, fileArray);
+}
+
+async function _search(regex, fileArray, index = 0) {
+    let found = [];
+    await Promise.all(fileArray.forEach(file => {
+        // let stats = stat(file);
+        // console.log(stats);
+        testDir(file)
+        .then( isDir => {
+            if (isDir) resolve(_search(file));
+            else if (searchFile(regex, file))  resolve(process.cwd + "/" + file);
+            else resolve();
+        })
+        .then(result => {
+            if (result) {
+                found.push(result);
+            }
+            resolve; 
+        })
+    })).catch(error => {
+        console.log(error);
+    });
+    return found;
+    // TODO test Dir, branch recursive _search, 
+    // create foundFiles array and concat results of recursive _search
 }
 
 async function searchFile(regex, file) {
@@ -43,12 +46,15 @@ async function testDir(path) {
     return new Promise((resolve, reject) => {
         let stats;
         try {
-            stats = stat(path);
+            stats = lstat(path).isDirectory();
+            console.log("STATS");
+            console.log(stats);
         } catch (error) {
             if (error.code != "ENOENT") throw error;
             else reject(error);
         }
-        resolve(tats.isDirectory());
+        resolve(stats.isDirectory());
     })
 }
 
+console.log(_initSearch());
